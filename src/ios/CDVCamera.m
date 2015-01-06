@@ -95,6 +95,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
         NSLog(@"Camera.getPicture: source type %lu not available.", (unsigned long)sourceType);
         CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"no camera available"];
         [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+        [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
         return;
     }
 
@@ -162,6 +163,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
         [self.viewController presentViewController:cameraPicker animated:YES completion:nil];
     }
     self.hasPendingOperation = NO;
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 }
 
 - (void)repositionPopover:(CDVInvokedUrlCommand*)command
@@ -195,6 +197,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
                                                                  inView:[self.webView superview]
                                                permittedArrowDirections:arrowDirection
                                                                animated:YES];
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 }
 
 - (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated
@@ -206,6 +209,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
             [viewController.navigationItem setTitle:NSLocalizedString(@"Videos title", nil)];
         }
     }
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 }
 
 - (void)cleanup:(CDVInvokedUrlCommand*)command
@@ -241,6 +245,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     }
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 }
 
 - (void)popoverControllerDidDismissPopover:(id)popoverController
@@ -257,6 +262,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
         [self.commandDelegate sendPluginResult:result callbackId:callbackId];
     }
     self.hasPendingOperation = NO;
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 }
 
 - (void)imagePickerController:(UIImagePickerController*)picker didFinishPickingMediaWithInfo:(NSDictionary*)info
@@ -375,6 +381,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
 
     self.hasPendingOperation = NO;
     self.pickerController = nil;
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 }
 
 // older api calls newer didFinishPickingMediaWithInfo
@@ -402,6 +409,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
 
     self.hasPendingOperation = NO;
     self.pickerController = nil;
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 }
 
 - (UIImage*)imageByScalingAndCroppingForSize:(UIImage*)anImage toSize:(CGSize)targetSize
@@ -454,6 +462,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
 
     // pop the context to get back to the default
     UIGraphicsEndImageContext();
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
     return newImage;
 }
 
@@ -504,6 +513,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
 
     UIImage* newImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
     return newImage;
 }
 
@@ -547,6 +557,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
 
     // pop the context to get back to the default
     UIGraphicsEndImageContext();
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
     return newImage;
 }
 
@@ -559,7 +570,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
 	locationManager = [[CLLocationManager alloc] init];
 	[locationManager setDesiredAccuracy:kCLLocationAccuracyNearestTenMeters];
 	[locationManager setDelegate:self];
-    
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 	return locationManager;
 }
 
@@ -616,6 +627,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
 		[self.metadata setObject:GPSDictionary forKey:(NSString *)kCGImagePropertyGPSDictionary];
  		[self imagePickerControllerReturnImageResult];
 	}
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 }
 
 - (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error {
@@ -625,6 +637,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
         
 		[self imagePickerControllerReturnImageResult];
 	}
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 }
 
 - (void)imagePickerControllerReturnImageResult
@@ -680,11 +693,14 @@ static NSSet* org_apache_cordova_validArrowDirections;
     if (result) {
         [self.commandDelegate sendPluginResult:result callbackId:self.pickerController.callbackId];
     }
+
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
     
     self.hasPendingOperation = NO;
     self.pickerController = nil;
     self.data = nil;
     self.metadata = nil;
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 }
 
 @end
@@ -716,8 +732,8 @@ static NSSet* org_apache_cordova_validArrowDirections;
     if ([self respondsToSelector:sel]) {
         [self performSelector:sel withObject:nil afterDelay:0];
     }
-    
     [super viewWillAppear:animated];
+    [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 }
 
 @end
