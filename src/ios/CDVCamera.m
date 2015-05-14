@@ -29,6 +29,7 @@
 #import <ImageIO/CGImageProperties.h>
 #import <ImageIO/CGImageDestination.h>
 #import <MobileCoreServices/UTCoreTypes.h>
+#import <AVFoundation/AVFoundation.h>
 
 #define CDV_PHOTO_PREFIX @"cdv_photo_"
 
@@ -120,12 +121,75 @@ static NSSet* org_apache_cordova_validArrowDirections;
     CDVCameraPicker* cameraPicker = [[CDVCameraPicker alloc] init];
     self.pickerController = cameraPicker;
 
+    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+
+    //float y = [UIScreen mainScreen].bounds.size.height - [UIApplication sharedApplication].statusBarFrame.size.height - myView.frame.size.height;
+
+    UIView *overlayView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height)];
+    UIView *barTop = [[UIView alloc] initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 46)];
+    [barTop setBackgroundColor:[UIColor colorWithRed:0.03921568627 green:0.03921568627 blue:0.03921568627 alpha:1]];
+
+    UIButton *closeCam = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    UIImage *imgClose = [[UIImage imageNamed:@"close.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    [closeCam setImage: imgClose   
+                forState:UIControlStateNormal];
+    [closeCam addTarget:self
+                action:@selector(cancelCamera:)
+      forControlEvents:UIControlEventTouchUpInside];
+    closeCam.frame = CGRectMake(0, 0, 60, 46);
+    
+    [barTop addSubview:closeCam];
+
+    UIButton *reverseCam = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    UIImage *imgReverseCam = [[UIImage imageNamed:@"front-camera.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    [reverseCam setImage: imgReverseCam   
+                forState:UIControlStateNormal];
+    [reverseCam addTarget:self
+                  action:@selector(onClickButtonCamReverse:)
+        forControlEvents:UIControlEventTouchUpInside];
+    reverseCam.frame = CGRectMake([UIScreen mainScreen].bounds.size.width - 60, 0, 60, 46);
+    
+    [barTop addSubview:reverseCam];
+    [overlayView addSubview:barTop];
+
+    UIView *barBottom = [[UIView alloc] initWithFrame:CGRectMake(0, [UIScreen mainScreen].bounds.size.height - 103, [UIScreen mainScreen].bounds.size.width, 103)];
+    [barBottom setBackgroundColor:[UIColor colorWithRed:0.1294117647 green:0.1294117647 blue:0.1294117647 alpha:1]];
+
+    UIButton *btnTakePhoto = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    UIImage *imgTakePhoto = [[UIImage imageNamed:@"circle-main.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    [btnTakePhoto setImage: imgTakePhoto   
+                forState:UIControlStateNormal];
+    [btnTakePhoto addTarget:self
+                  action:@selector(saveImage:)
+        forControlEvents:UIControlEventTouchUpInside];
+    btnTakePhoto.frame = CGRectMake([UIScreen mainScreen].bounds.size.width/2 - 30, barBottom.frame.size.height/2 - 33.5, 67, 67);
+    
+    [barBottom addSubview:btnTakePhoto];
+
+
+    if ([device hasTorch] == YES)
+    {
+        flashlightButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        UIImage *imgFlash = [[UIImage imageNamed:@"flash-off.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        [flashlightButton setImage: imgFlash   
+                    forState:UIControlStateNormal];
+        flashlightButton.frame = CGRectMake([UIScreen mainScreen].bounds.size.width - 60, 0, 40, 103);
+        [flashlightButton addTarget:self
+                     action:@selector(buttonPressed:) 
+           forControlEvents:UIControlEventTouchUpInside];
+        [barBottom addSubview:flashlightButton];
+    }
+    
+    [overlayView addSubview:barBottom];
+
     cameraPicker.delegate = self;
     cameraPicker.sourceType = sourceType;
     cameraPicker.allowsEditing = allowEdit; // THIS IS ALL IT TAKES FOR CROPPING - jm
     cameraPicker.callbackId = callbackId;
     cameraPicker.targetSize = targetSize;
     cameraPicker.cropToSize = NO;
+    cameraPicker.cameraOverlayView = overlayView;
+    cameraPicker.showsCameraControls = NO;
     // we need to capture this state for memory warnings that dealloc this object
     cameraPicker.webView = self.webView;
     cameraPicker.popoverSupported = [self popoverSupported];
@@ -164,6 +228,69 @@ static NSSet* org_apache_cordova_validArrowDirections;
     }
     self.hasPendingOperation = NO;
     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
+}
+
+-(IBAction)cancelCamera:(id)sender
+{
+    [self.pickerController dismissModalViewControllerAnimated:YES];
+}
+
+//IBAction (for switching between front and rear camera).
+
+-(IBAction)onClickButtonCamReverse:(id)sender
+{
+    if(self.pickerController.cameraDevice == UIImagePickerControllerCameraDeviceFront)
+    {
+      self.pickerController.cameraDevice = UIImagePickerControllerCameraDeviceRear;
+    }
+    else 
+    {
+      self.pickerController.cameraDevice = UIImagePickerControllerCameraDeviceFront;
+    }
+}
+
+-(IBAction)saveImage:(id)sender
+{
+   [self.pickerController takePicture];
+}
+
+- (void)buttonPressed:(UIButton *)button
+{
+    if (flashlightOn == NO)
+    {
+      flashlightOn = YES;
+      UIImage *imgFlashOn = [[UIImage imageNamed:@"flash-on.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        [flashlightButton setImage: imgFlashOn   
+                    forState:UIControlStateNormal];
+    }
+    else
+    {
+      flashlightOn = NO;
+      UIImage *imgFlashOff = [[UIImage imageNamed:@"flash-off.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        [flashlightButton setImage: imgFlashOff   
+                    forState:UIControlStateNormal];
+    }
+
+    [self toggleFlashlight];
+}
+
+- (void)toggleFlashlight
+{
+    AVCaptureDevice *flashLight = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+
+    if ([flashLight isTorchAvailable] && [flashLight isTorchModeSupported:AVCaptureTorchModeOn])
+    {
+        BOOL success = [flashLight lockForConfiguration:nil];
+        if (success) 
+        {
+            if ([flashLight isTorchActive]) {
+                [flashLight setTorchMode:AVCaptureTorchModeOff];
+            } else {
+                [flashLight setTorchMode:AVCaptureTorchModeOn];
+            }
+            [flashLight unlockForConfiguration];
+        }
+    }
 }
 
 - (void)repositionPopover:(CDVInvokedUrlCommand*)command
@@ -288,6 +415,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
         } else {
             // get the image
             UIImage* image = nil;
+
             if (cameraPicker.allowsEditing && [info objectForKey:UIImagePickerControllerEditedImage]) {
                 image = [info objectForKey:UIImagePickerControllerEditedImage];
             } else {
@@ -365,7 +493,8 @@ static NSSet* org_apache_cordova_validArrowDirections;
                     result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[[NSURL fileURLWithPath:filePath] absoluteString]];
                 }
             } else {
-                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[data base64EncodedString]];
+                NSString *encodedString = [data cdv_base64EncodedString];
+                result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:encodedString];
             }
         }
     }

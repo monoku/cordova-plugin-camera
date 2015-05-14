@@ -21,6 +21,7 @@
 #import <CoreLocation/CoreLocation.h>
 #import <CoreLocation/CLLocationManager.h>
 #import <Cordova/CDVPlugin.h>
+#import <AVFoundation/AVFoundation.h>
 
 enum CDVDestinationType {
     DestinationTypeDataUrl = 0,
@@ -58,6 +59,7 @@ typedef NSUInteger CDVMediaType;
 @property (strong) UIView* webView;
 @property (assign) BOOL popoverSupported;
 @property (assign) BOOL usesGeolocation;
+@property (nonatomic, strong) IBOutlet UIBarButtonItem* closeButton;
 
 @end
 
@@ -67,12 +69,17 @@ typedef NSUInteger CDVMediaType;
                        UINavigationControllerDelegate,
                        UIPopoverControllerDelegate,
                        CLLocationManagerDelegate>
-{}
+{
+  UIButton          *flashlightButton;
+  AVCaptureSession  *AVSession;
+  BOOL              flashlightOn;
+}
 
 @property (strong) CDVCameraPicker* pickerController;
 @property (strong) NSMutableDictionary *metadata;
 @property (strong, nonatomic) CLLocationManager *locationManager;
 @property (strong) NSData* data;
+@property (nonatomic, retain) AVCaptureSession *AVSession;
 
 /*
  * getPicture
