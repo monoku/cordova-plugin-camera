@@ -137,6 +137,7 @@
          <source-file src="src/ios/CDVCamera.m" />
          <header-file src="src/ios/CDVJpegHeaderWriter.h" />
          <source-file src="src/ios/CDVJpegHeaderWriter.m" />
+
          <header-file src="src/ios/CDVExif.h" />
          <framework src="ImageIO.framework" weak="true" />
          <framework src="CoreLocation.framework" />

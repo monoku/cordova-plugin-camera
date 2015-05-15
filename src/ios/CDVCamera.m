@@ -166,6 +166,15 @@ static NSSet* org_apache_cordova_validArrowDirections;
     
     [barBottom addSubview:btnTakePhoto];
 
+    UIButton *selectMultiPhoto = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [selectMultiPhoto setBackgroundColor: [UIColor whiteColor]];
+    [selectMultiPhoto addTarget:self
+                  action:@selector(launchController:)
+        forControlEvents:UIControlEventTouchUpInside];
+    selectMultiPhoto.frame = CGRectMake(20, barBottom.frame.size.height/2 - 23.5, 47, 47);
+    
+    [barBottom addSubview:selectMultiPhoto];
+
 
     if ([device hasTorch] == YES)
     {
@@ -247,6 +256,17 @@ static NSSet* org_apache_cordova_validArrowDirections;
     {
       self.pickerController.cameraDevice = UIImagePickerControllerCameraDeviceFront;
     }
+}
+
+- (IBAction)launchController:(id)sender
+{
+    CDVPluginResult* result = nil;
+    NSString* callbackId = self.pickerController.callbackId;
+
+    result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK  messageAsDictionary:@{@"type":@"imagePicker"}];
+
+    [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+    [self.pickerController dismissModalViewControllerAnimated:YES];
 }
 
 -(IBAction)saveImage:(id)sender
