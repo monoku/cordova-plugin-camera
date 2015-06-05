@@ -156,6 +156,8 @@
          <resource-file src="src/ios/flash-off@3x~iphone.png" target="src/ios/flash-off@3x~iphone.png" />
          <resource-file src="src/ios/flash-on@2x~iphone.png" target="src/ios/flash-on@2x~iphone.png" />
          <resource-file src="src/ios/flash-on@3x~iphone.png" target="src/ios/flash-on@3x~iphone.png" />
+         <resource-file src="src/ios/flash-auto@2x~iphone.png" target="src/ios/flash-auto@2x~iphone.png" />
+         <resource-file src="src/ios/flash-auto@3x~iphone.png" target="src/ios/flash-auto@3x~iphone.png" />
          <resource-file src="src/ios/close@2x~iphone.png" target="src/ios/close@2x~iphone.png" />
          <resource-file src="src/ios/close@3x~iphone.png" target="src/ios/close@3x~iphone.png" />
          <resource-file src="src/ios/circle-main.png" target="src/ios/circle-main.png" />

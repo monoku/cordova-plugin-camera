@@ -80,8 +80,11 @@ static NSSet* org_apache_cordova_validArrowDirections;
  */
 - (void)takePicture:(CDVInvokedUrlCommand*)command
 {
+    NSLog(@"O_O_O_O_O_O_O_O ACAAAAAAA -2");
     NSString* callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
+    
+    NSLog(@"O_O_O_O_O_O_O_O ACAAAAAAA -1");
 
     self.hasPendingOperation = YES;
 
@@ -99,6 +102,8 @@ static NSSet* org_apache_cordova_validArrowDirections;
         [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
         return;
     }
+    
+    NSLog(@"O_O_O_O_O_O_O_O ACAAAAAAA 0");
 
     bool allowEdit = [[arguments objectAtIndex:7] boolValue];
     NSNumber* targetWidth = [arguments objectAtIndex:3];
@@ -126,6 +131,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
     //float y = [UIScreen mainScreen].bounds.size.height - [UIApplication sharedApplication].statusBarFrame.size.height - myView.frame.size.height;
 
     UIView *overlayView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height)];
+//    [overlayView setBackgroundColor:[UIColor redColor]];
     UIView *barTop = [[UIView alloc] initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 46)];
     [barTop setBackgroundColor:[UIColor colorWithRed:0.03921568627 green:0.03921568627 blue:0.03921568627 alpha:1]];
 
@@ -153,7 +159,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
     [overlayView addSubview:barTop];
 
     UIView *barBottom = [[UIView alloc] initWithFrame:CGRectMake(0, [UIScreen mainScreen].bounds.size.height - 103, [UIScreen mainScreen].bounds.size.width, 103)];
-    [barBottom setBackgroundColor:[UIColor colorWithRed:0.1294117647 green:0.1294117647 blue:0.1294117647 alpha:1]];
+    [barBottom setBackgroundColor:[UIColor colorWithRed:0 green:0 blue:0 alpha:1]];
 
     UIButton *btnTakePhoto = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     UIImage *imgTakePhoto = [[UIImage imageNamed:@"circle-main.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
@@ -166,20 +172,55 @@ static NSSet* org_apache_cordova_validArrowDirections;
     
     [barBottom addSubview:btnTakePhoto];
 
-    UIButton *selectMultiPhoto = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    [selectMultiPhoto setBackgroundColor: [UIColor whiteColor]];
-    [selectMultiPhoto addTarget:self
-                  action:@selector(launchController:)
-        forControlEvents:UIControlEventTouchUpInside];
-    selectMultiPhoto.frame = CGRectMake(20, barBottom.frame.size.height/2 - 23.5, 47, 47);
+    UIButton *selectMultiPhoto = [UIButton buttonWithType:UIBarButtonItemStylePlain];
+//    [selectMultiPhoto setBackgroundColor: [UIColor redColor]];
     
+    [selectMultiPhoto addTarget:self
+                         action:@selector(launchController:)
+               forControlEvents:UIControlEventTouchUpInside];
+    selectMultiPhoto.frame = CGRectMake(20, barBottom.frame.size.height/2 - 23.5, 47, 47);
     [barBottom addSubview:selectMultiPhoto];
+
+    ALAssetsLibrary *assetsLibrary = [[ALAssetsLibrary alloc] init];
+    [assetsLibrary enumerateGroupsWithTypes:ALAssetsGroupSavedPhotos
+                                 usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
+                                     if (nil != group) {
+                                         // be sure to filter the group so you only get photos
+                                         [group setAssetsFilter:[ALAssetsFilter allPhotos]];
+                                         
+                                         
+                                         [group enumerateAssetsAtIndexes:[NSIndexSet indexSetWithIndex:group.numberOfAssets - 1]
+                                                                 options:0
+                                                              usingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
+                                                                  if (nil != result) {
+                                                                      ALAssetRepresentation *repr = [result defaultRepresentation];
+                                                                      // this is the most recent saved photo
+                                                                      UIImage *img = [UIImage imageWithCGImage:[repr fullResolutionImage]];
+                                                                      // we only need the first (most recent) photo -- stop the enumeration
+                                                                      NSLog(@"Got image");
+                                                                      *stop = YES;
+                                                                      CGRect rect = CGRectMake(0.0, 0.0, 47, 47);
+                                                                      UIGraphicsBeginImageContext(rect.size);
+                                                                      [img drawInRect:rect];
+                                                                      UIImage *resImage = UIGraphicsGetImageFromCurrentImageContext();
+                                                                      UIGraphicsEndImageContext();
+                                                                      [selectMultiPhoto setImage: resImage
+                                                                                        forState:UIControlStateNormal];
+                                                                      NSLog(@"Placed other image");
+                                                                  }
+                                                              }];
+                                     }
+                                     
+                                     *stop = NO;
+                                 } failureBlock:^(NSError *error) {
+                                     NSLog(@"error: %@", error);
+                                 }];
 
 
     if ([device hasTorch] == YES)
     {
         flashlightButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-        UIImage *imgFlash = [[UIImage imageNamed:@"flash-off.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        UIImage *imgFlash = [[UIImage imageNamed:@"flash-auto.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
         [flashlightButton setImage: imgFlash   
                     forState:UIControlStateNormal];
         flashlightButton.frame = CGRectMake([UIScreen mainScreen].bounds.size.width - 60, 0, 40, 103);
@@ -202,16 +243,29 @@ static NSSet* org_apache_cordova_validArrowDirections;
     // we need to capture this state for memory warnings that dealloc this object
     cameraPicker.webView = self.webView;
     cameraPicker.popoverSupported = [self popoverSupported];
-    cameraPicker.usesGeolocation = [self usesGeolocation];
-
+    cameraPicker.usesGeolocation = YES;
+    
+    AVCaptureDevice *flashLight = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    
+    if ([flashLight isTorchAvailable] && [flashLight isTorchModeSupported:AVCaptureTorchModeOn])
+    {
+        BOOL success = [flashLight lockForConfiguration:nil];
+        if (success)
+        {
+            [flashLight setTorchMode:AVCaptureTorchModeAuto];
+            flashlightMode = @"AUTO";
+        }
+    }
+    
     cameraPicker.correctOrientation = [[arguments objectAtIndex:8] boolValue];
-    cameraPicker.saveToPhotoAlbum = [[arguments objectAtIndex:9] boolValue];
+    cameraPicker.saveToPhotoAlbum = YES;
 
     cameraPicker.encodingType = ([arguments objectAtIndex:5]) ? [[arguments objectAtIndex:5] intValue] : EncodingTypeJPEG;
 
     cameraPicker.quality = ([arguments objectAtIndex:0]) ? [[arguments objectAtIndex:0] intValue] : 50;
     cameraPicker.returnType = ([arguments objectAtIndex:1]) ? [[arguments objectAtIndex:1] intValue] : DestinationTypeFileUri;
-
+    
+    NSLog(@"O_O_O_O_O_O_O_O ACAAAAAAA");
     if (sourceType == UIImagePickerControllerSourceTypeCamera) {
         // We only allow taking pictures (no video) in this API.
         cameraPicker.mediaTypes = [NSArray arrayWithObjects:(NSString*)kUTTypeImage, nil];
@@ -241,7 +295,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
 
 -(IBAction)cancelCamera:(id)sender
 {
-    [self.pickerController dismissModalViewControllerAnimated:YES];
+    [self imagePickerControllerDidCancel:self.pickerController];
 }
 
 //IBAction (for switching between front and rear camera).
@@ -276,19 +330,26 @@ static NSSet* org_apache_cordova_validArrowDirections;
 
 - (void)buttonPressed:(UIButton *)button
 {
-    if (flashlightOn == NO)
+    if ([flashlightMode isEqualToString:@"OFF"])
     {
-      flashlightOn = YES;
-      UIImage *imgFlashOn = [[UIImage imageNamed:@"flash-on.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        flashlightMode = @"ON";
+        UIImage *imgFlashOn = [[UIImage imageNamed:@"flash-on.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
         [flashlightButton setImage: imgFlashOn   
                     forState:UIControlStateNormal];
     }
+    else if([flashlightMode isEqualToString:@"AUTO"])
+    {
+        flashlightMode = @"OFF";
+        UIImage *imgFlashOff = [[UIImage imageNamed:@"flash-off.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        [flashlightButton setImage: imgFlashOff
+                          forState:UIControlStateNormal];
+    }
     else
     {
-      flashlightOn = NO;
-      UIImage *imgFlashOff = [[UIImage imageNamed:@"flash-off.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        [flashlightButton setImage: imgFlashOff   
-                    forState:UIControlStateNormal];
+        flashlightMode = @"AUTO";
+        UIImage *imgFlashAuto = [[UIImage imageNamed:@"flash-auto.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        [flashlightButton setImage: imgFlashAuto
+                          forState:UIControlStateNormal];
     }
 
     [self toggleFlashlight];
@@ -297,16 +358,17 @@ static NSSet* org_apache_cordova_validArrowDirections;
 - (void)toggleFlashlight
 {
     AVCaptureDevice *flashLight = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-
     if ([flashLight isTorchAvailable] && [flashLight isTorchModeSupported:AVCaptureTorchModeOn])
     {
         BOOL success = [flashLight lockForConfiguration:nil];
         if (success) 
         {
-            if ([flashLight isTorchActive]) {
+            if ([flashlightMode isEqualToString:@"OFF"]){
                 [flashLight setTorchMode:AVCaptureTorchModeOff];
-            } else {
+            }else if([flashlightMode isEqualToString:@"ON"]){
                 [flashLight setTorchMode:AVCaptureTorchModeOn];
+            }else{
+                [flashLight setTorchMode:AVCaptureTorchModeAuto];
             }
             [flashLight unlockForConfiguration];
         }
@@ -397,7 +459,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
 
 - (void)popoverControllerDidDismissPopover:(id)popoverController
 {
-    // [ self imagePickerControllerDidCancel:self.pickerController ];	'
+    // [ self imagePickerControllerDidCancel:self.pickerController ]; '
     UIPopoverController* pc = (UIPopoverController*)popoverController;
 
     [pc dismissPopoverAnimated:YES];
@@ -425,7 +487,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
     }
 
     CDVPluginResult* result = nil;
-
+    
     NSString* mediaType = [info objectForKey:UIImagePickerControllerMediaType];
     // IMAGE TYPE
     if ([mediaType isEqualToString:(NSString*)kUTTypeImage]) {
@@ -460,23 +522,57 @@ static NSSet* org_apache_cordova_validArrowDirections;
             NSData* data = nil;
             // returnedImage is the image that is returned to caller and (optionally) saved to photo album
             UIImage* returnedImage = (scaledImage == nil ? image : scaledImage);
-
+            
+            NSLog(@"BEFORE");
+            
             if (cameraPicker.encodingType == EncodingTypePNG) {
+                NSLog(@"PNG");
                 data = UIImagePNGRepresentation(returnedImage);
             } else if ((cameraPicker.allowsEditing==false) && (cameraPicker.targetSize.width <= 0) && (cameraPicker.targetSize.height <= 0) && (cameraPicker.correctOrientation==false)){
                 // use image unedited as requested , don't resize
+                NSLog(@"JPGRepresentation");
                 data = UIImageJPEGRepresentation(returnedImage, 1.0);
-            } else {
-                data = UIImageJPEGRepresentation(returnedImage, cameraPicker.quality / 100.0f);
                 
                 if (cameraPicker.usesGeolocation) {
+                    NSLog(@"uses geolocation");
                     NSDictionary *controllerMetadata = [info objectForKey:@"UIImagePickerControllerMediaMetadata"];
+                    NSLog(@"has METAdata %@", controllerMetadata);
+                    
                     if (controllerMetadata) {
                         self.data = data;
                         self.metadata = [[NSMutableDictionary alloc] init];
                         
                         NSMutableDictionary *EXIFDictionary = [[controllerMetadata objectForKey:(NSString *)kCGImagePropertyExifDictionary]mutableCopy];
-                        if (EXIFDictionary)	[self.metadata setObject:EXIFDictionary forKey:(NSString *)kCGImagePropertyExifDictionary];
+                        
+                        NSLog(@"has data %@", EXIFDictionary);
+                        
+                        if (IsAtLeastiOSVersion(@"8.0")) {
+                            [[self locationManager] performSelector:NSSelectorFromString(@"requestWhenInUseAuthorization") withObject:nil afterDelay:0];
+                        }
+                        [[self locationManager] startUpdatingLocation];
+                    }
+                }else{
+                     NSLog(@"doesn't use geolocation");
+                }
+            } else {
+                data = UIImageJPEGRepresentation(returnedImage, cameraPicker.quality / 100.0f);
+                NSLog(@"uses geolocation %@", cameraPicker.usesGeolocation);
+
+                if (cameraPicker.usesGeolocation) {
+                    NSDictionary *controllerMetadata = [info objectForKey:@"UIImagePickerControllerMediaMetadata"];
+                    NSLog(@"has METAdata %@", controllerMetadata);
+
+                    if (controllerMetadata) {
+                        self.data = data;
+                        self.metadata = [[NSMutableDictionary alloc] init];
+                        
+                        NSMutableDictionary *EXIFDictionary = [[controllerMetadata objectForKey:(NSString *)kCGImagePropertyExifDictionary]mutableCopy];
+                        
+                        NSLog(@"has data %@", EXIFDictionary);
+                        
+//                        id latitudeValue = [EXIFDictionary tagValue:[NSNumber numberWithInt:EXIF_GPSLatitude]]
+                        
+                        if (EXIFDictionary) [self.metadata setObject:EXIFDictionary forKey:(NSString *)kCGImagePropertyExifDictionary];
                         
                         if (IsAtLeastiOSVersion(@"8.0")) {
                             [[self locationManager] performSelector:NSSelectorFromString(@"requestWhenInUseAuthorization") withObject:nil afterDelay:0];
@@ -491,6 +587,8 @@ static NSSet* org_apache_cordova_validArrowDirections;
                 ALAssetsLibrary *library = [ALAssetsLibrary new];
                 [library writeImageToSavedPhotosAlbum:returnedImage.CGImage orientation:(ALAssetOrientation)(returnedImage.imageOrientation) completionBlock:nil];
             }
+            
+//            NSLog(@"======= image picked %@ with info %@", returnedImage, info);
 
             if (cameraPicker.returnType == DestinationTypeFileUri) {
                 // write to temp directory and return URI
@@ -712,57 +810,57 @@ static NSSet* org_apache_cordova_validArrowDirections;
 
 - (CLLocationManager *)locationManager {
     
-	if (locationManager != nil) {
-		return locationManager;
-	}
+  if (locationManager != nil) {
+    return locationManager;
+  }
     
-	locationManager = [[CLLocationManager alloc] init];
-	[locationManager setDesiredAccuracy:kCLLocationAccuracyNearestTenMeters];
-	[locationManager setDelegate:self];
+  locationManager = [[CLLocationManager alloc] init];
+  [locationManager setDesiredAccuracy:kCLLocationAccuracyNearestTenMeters];
+  [locationManager setDelegate:self];
     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
-	return locationManager;
+  return locationManager;
 }
 
 - (void)locationManager:(CLLocationManager*)manager didUpdateToLocation:(CLLocation*)newLocation fromLocation:(CLLocation*)oldLocation
 {
-	if (locationManager != nil) {
-		[self.locationManager stopUpdatingLocation];
-		self.locationManager = nil;
+  if (locationManager != nil) {
+    [self.locationManager stopUpdatingLocation];
+    self.locationManager = nil;
         
-		NSMutableDictionary *GPSDictionary = [[NSMutableDictionary dictionary] init];
+    NSMutableDictionary *GPSDictionary = [[NSMutableDictionary dictionary] init];
         
-		CLLocationDegrees latitude  = newLocation.coordinate.latitude;
-		CLLocationDegrees longitude = newLocation.coordinate.longitude;
+    CLLocationDegrees latitude  = newLocation.coordinate.latitude;
+    CLLocationDegrees longitude = newLocation.coordinate.longitude;
         
-		// latitude
-		if (latitude < 0.0) {
-			latitude = latitude * -1.0f;
-			[GPSDictionary setObject:@"S" forKey:(NSString*)kCGImagePropertyGPSLatitudeRef];
-		} else {
-			[GPSDictionary setObject:@"N" forKey:(NSString*)kCGImagePropertyGPSLatitudeRef];
-		}
-		[GPSDictionary setObject:[NSNumber numberWithFloat:latitude] forKey:(NSString*)kCGImagePropertyGPSLatitude];
+    // latitude
+    if (latitude < 0.0) {
+      latitude = latitude * -1.0f;
+      [GPSDictionary setObject:@"S" forKey:(NSString*)kCGImagePropertyGPSLatitudeRef];
+    } else {
+      [GPSDictionary setObject:@"N" forKey:(NSString*)kCGImagePropertyGPSLatitudeRef];
+    }
+    [GPSDictionary setObject:[NSNumber numberWithFloat:latitude] forKey:(NSString*)kCGImagePropertyGPSLatitude];
         
-		// longitude
-		if (longitude < 0.0) {
-			longitude = longitude * -1.0f;
-			[GPSDictionary setObject:@"W" forKey:(NSString*)kCGImagePropertyGPSLongitudeRef];
-		}
-		else {
-			[GPSDictionary setObject:@"E" forKey:(NSString*)kCGImagePropertyGPSLongitudeRef];
-		}
-		[GPSDictionary setObject:[NSNumber numberWithFloat:longitude] forKey:(NSString*)kCGImagePropertyGPSLongitude];
+    // longitude
+    if (longitude < 0.0) {
+      longitude = longitude * -1.0f;
+      [GPSDictionary setObject:@"W" forKey:(NSString*)kCGImagePropertyGPSLongitudeRef];
+    }
+    else {
+      [GPSDictionary setObject:@"E" forKey:(NSString*)kCGImagePropertyGPSLongitudeRef];
+    }
+    [GPSDictionary setObject:[NSNumber numberWithFloat:longitude] forKey:(NSString*)kCGImagePropertyGPSLongitude];
         
-		// altitude
+    // altitude
         CGFloat altitude = newLocation.altitude;
         if (!isnan(altitude)){
-			if (altitude < 0) {
-				altitude = -altitude;
-				[GPSDictionary setObject:@"1" forKey:(NSString *)kCGImagePropertyGPSAltitudeRef];
-			} else {
-				[GPSDictionary setObject:@"0" forKey:(NSString *)kCGImagePropertyGPSAltitudeRef];
-			}
-			[GPSDictionary setObject:[NSNumber numberWithFloat:altitude] forKey:(NSString *)kCGImagePropertyGPSAltitude];
+      if (altitude < 0) {
+        altitude = -altitude;
+        [GPSDictionary setObject:@"1" forKey:(NSString *)kCGImagePropertyGPSAltitudeRef];
+      } else {
+        [GPSDictionary setObject:@"0" forKey:(NSString *)kCGImagePropertyGPSAltitudeRef];
+      }
+      [GPSDictionary setObject:[NSNumber numberWithFloat:altitude] forKey:(NSString *)kCGImagePropertyGPSAltitude];
         }
         
         // Time and date
@@ -773,26 +871,26 @@ static NSSet* org_apache_cordova_validArrowDirections;
         [formatter setDateFormat:@"yyyy:MM:dd"];
         [GPSDictionary setObject:[formatter stringFromDate:newLocation.timestamp] forKey:(NSString *)kCGImagePropertyGPSDateStamp];
         
-		[self.metadata setObject:GPSDictionary forKey:(NSString *)kCGImagePropertyGPSDictionary];
- 		[self imagePickerControllerReturnImageResult];
-	}
+    [self.metadata setObject:GPSDictionary forKey:(NSString *)kCGImagePropertyGPSDictionary];
+    [self imagePickerControllerReturnImageResult];
+  }
     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 }
 
 - (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error {
-	if (locationManager != nil) {
-		[self.locationManager stopUpdatingLocation];
-		self.locationManager = nil;
+  if (locationManager != nil) {
+    [self.locationManager stopUpdatingLocation];
+    self.locationManager = nil;
         
-		[self imagePickerControllerReturnImageResult];
-	}
+    [self imagePickerControllerReturnImageResult];
+  }
     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 }
 
 - (void)imagePickerControllerReturnImageResult
 {
     CDVPluginResult* result = nil;
-    
+    NSLog(@"WTFFFFFFFF 1");
     if (self.metadata) {
         CGImageSourceRef sourceImage = CGImageSourceCreateWithData((__bridge CFDataRef)self.data, NULL);
         CFStringRef sourceType = CGImageSourceGetType(sourceImage);
