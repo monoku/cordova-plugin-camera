@@ -72,7 +72,7 @@ typedef NSUInteger CDVMediaType;
 {
   UIButton          *flashlightButton;
   AVCaptureSession  *AVSession;
-  BOOL              flashlightOn;
+  NSString          *flashlightMode;
 }
 
 @property (strong) CDVCameraPicker* pickerController;
