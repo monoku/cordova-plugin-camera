@@ -156,6 +156,8 @@ static NSSet* org_apache_cordova_validArrowDirections;
 
     UIView *barBottom = [[UIView alloc] initWithFrame:CGRectMake(0, [UIScreen mainScreen].bounds.size.height - 103, [UIScreen mainScreen].bounds.size.width, 103)];
     [barBottom setBackgroundColor:[UIColor colorWithRed:0 green:0 blue:0 alpha:1]];
+    
+    self._barBottom = barBottom;
 
     UIButton *btnTakePhoto = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     UIImage *imgTakePhoto = [[UIImage imageNamed:@"circle-main.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
@@ -227,6 +229,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
     }
     
     [overlayView addSubview:barBottom];
+    self._overlay = overlayView;
     
     cameraPicker.delegate = self;
     cameraPicker.sourceType = sourceType;
@@ -325,6 +328,14 @@ static NSSet* org_apache_cordova_validArrowDirections;
                                                                                 green:0
                                                                                  blue:0
                                                                                 alpha:0.8]];
+    [self._barBottom setAlpha:0.2];
+    CGRect screenRect = [[UIScreen mainScreen] bounds];
+    
+    UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(0, screenRect.size.height*0.4, screenRect.size.width, 20)];
+    label.text = @"loading image...";
+    label.textColor = [UIColor whiteColor];
+    [label setTextAlignment:UITextAlignmentCenter];
+    [self._overlay addSubview:label];
 //    [self.cameraPicker stopVideoCapture];
 //    UIView *otherView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height)];
 //    self.cameraPicker.cameraOverlayView = otherView;

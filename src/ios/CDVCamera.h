@@ -80,16 +80,18 @@ typedef NSUInteger CDVMediaType;
 @property (strong, nonatomic) CLLocationManager *locationManager;
 @property (strong) NSData* data;
 @property (nonatomic, retain) AVCaptureSession *AVSession;
+@property (nonatomic, retain) UIView *_barBottom;
+@property (nonatomic, retain) UIView *_overlay;
 
 /*
  * getPicture
  *
  * arguments:
- *	1: this is the javascript function that will be called with the results, the first parameter passed to the
- *		javascript function is the picture as a Base64 encoded string
+ *  1: this is the javascript function that will be called with the results, the first parameter passed to the
+ *    javascript function is the picture as a Base64 encoded string
  *  2: this is the javascript function to be called if there was an error
  * options:
- *	quality: integer between 1 and 100
+ *  quality: integer between 1 and 100
  */
 - (void)takePicture:(CDVInvokedUrlCommand*)command;
 - (void)cleanup:(CDVInvokedUrlCommand*)command;
