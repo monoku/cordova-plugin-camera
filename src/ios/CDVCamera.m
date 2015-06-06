@@ -80,11 +80,8 @@ static NSSet* org_apache_cordova_validArrowDirections;
  */
 - (void)takePicture:(CDVInvokedUrlCommand*)command
 {
-    NSLog(@"O_O_O_O_O_O_O_O ACAAAAAAA -2");
     NSString* callbackId = command.callbackId;
     NSArray* arguments = command.arguments;
-    
-    NSLog(@"O_O_O_O_O_O_O_O ACAAAAAAA -1");
 
     self.hasPendingOperation = YES;
 
@@ -102,8 +99,6 @@ static NSSet* org_apache_cordova_validArrowDirections;
         [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
         return;
     }
-    
-    NSLog(@"O_O_O_O_O_O_O_O ACAAAAAAA 0");
 
     bool allowEdit = [[arguments objectAtIndex:7] boolValue];
     NSNumber* targetWidth = [arguments objectAtIndex:3];
@@ -131,6 +126,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
     //float y = [UIScreen mainScreen].bounds.size.height - [UIApplication sharedApplication].statusBarFrame.size.height - myView.frame.size.height;
 
     UIView *overlayView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height)];
+
 //    [overlayView setBackgroundColor:[UIColor redColor]];
     UIView *barTop = [[UIView alloc] initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 46)];
     [barTop setBackgroundColor:[UIColor colorWithRed:0.03921568627 green:0.03921568627 blue:0.03921568627 alpha:1]];
@@ -231,7 +227,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
     }
     
     [overlayView addSubview:barBottom];
-
+    
     cameraPicker.delegate = self;
     cameraPicker.sourceType = sourceType;
     cameraPicker.allowsEditing = allowEdit; // THIS IS ALL IT TAKES FOR CROPPING - jm
@@ -265,7 +261,6 @@ static NSSet* org_apache_cordova_validArrowDirections;
     cameraPicker.quality = ([arguments objectAtIndex:0]) ? [[arguments objectAtIndex:0] intValue] : 50;
     cameraPicker.returnType = ([arguments objectAtIndex:1]) ? [[arguments objectAtIndex:1] intValue] : DestinationTypeFileUri;
     
-    NSLog(@"O_O_O_O_O_O_O_O ACAAAAAAA");
     if (sourceType == UIImagePickerControllerSourceTypeCamera) {
         // We only allow taking pictures (no video) in this API.
         cameraPicker.mediaTypes = [NSArray arrayWithObjects:(NSString*)kUTTypeImage, nil];
@@ -325,7 +320,16 @@ static NSSet* org_apache_cordova_validArrowDirections;
 
 -(IBAction)saveImage:(id)sender
 {
-   [self.pickerController takePicture];
+    NSLog(@"Stop video capture");
+    [self.pickerController.cameraOverlayView setBackgroundColor:[UIColor colorWithRed:0
+                                                                                green:0
+                                                                                 blue:0
+                                                                                alpha:0.8]];
+//    [self.cameraPicker stopVideoCapture];
+//    UIView *otherView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, [UIScreen mainScreen].bounds.size.height)];
+//    self.cameraPicker.cameraOverlayView = otherView;
+//    [self.pickerController ];
+    [self.pickerController takePicture];
 }
 
 - (void)buttonPressed:(UIButton *)button
@@ -477,7 +481,6 @@ static NSSet* org_apache_cordova_validArrowDirections;
 - (void)imagePickerController:(UIImagePickerController*)picker didFinishPickingMediaWithInfo:(NSDictionary*)info
 {
     CDVCameraPicker* cameraPicker = (CDVCameraPicker*)picker;
-
     if (cameraPicker.popoverSupported && (cameraPicker.popoverController != nil)) {
         [cameraPicker.popoverController dismissPopoverAnimated:YES];
         cameraPicker.popoverController.delegate = nil;
