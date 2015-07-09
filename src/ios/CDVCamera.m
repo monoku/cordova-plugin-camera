@@ -558,7 +558,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
                         
                         NSMutableDictionary *EXIFDictionary = [[controllerMetadata objectForKey:(NSString *)kCGImagePropertyExifDictionary]mutableCopy];
                         
-                        NSLog(@"has data %@", EXIFDictionary);
+                        NSLog(@"=======================>>>>>>> has data  \n %@", EXIFDictionary);
                         
                         if (IsAtLeastiOSVersion(@"8.0")) {
                             [[self locationManager] performSelector:NSSelectorFromString(@"requestWhenInUseAuthorization") withObject:nil afterDelay:0];
@@ -570,7 +570,6 @@ static NSSet* org_apache_cordova_validArrowDirections;
                 }
             } else {
                 data = UIImageJPEGRepresentation(returnedImage, cameraPicker.quality / 100.0f);
-                NSLog(@"uses geolocation %@", cameraPicker.usesGeolocation);
 
                 if (cameraPicker.usesGeolocation) {
                     NSDictionary *controllerMetadata = [info objectForKey:@"UIImagePickerControllerMediaMetadata"];
@@ -582,7 +581,7 @@ static NSSet* org_apache_cordova_validArrowDirections;
                         
                         NSMutableDictionary *EXIFDictionary = [[controllerMetadata objectForKey:(NSString *)kCGImagePropertyExifDictionary]mutableCopy];
                         
-                        NSLog(@"has data %@", EXIFDictionary);
+                        NSLog(@"=======================>>>>>>> has data  \n %@", EXIFDictionary);
                         
 //                        id latitudeValue = [EXIFDictionary tagValue:[NSNumber numberWithInt:EXIF_GPSLatitude]]
                         
